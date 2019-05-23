@@ -193,7 +193,7 @@ class MUIDataTable extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.options !== prevProps.options) {
-      this.initializeTable(props);
+      this.initializeTable(this.props);
     }
     if (this.props.data !== prevProps.data || this.props.columns !== prevProps.columns) {
       this.setTableData(this.props, TABLE_LOAD.INITIAL);
