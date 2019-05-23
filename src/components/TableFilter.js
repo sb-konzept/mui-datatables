@@ -272,6 +272,7 @@ class TableFilter extends React.Component {
   render() {
     const { classes, columns, options, onFilterReset } = this.props;
     const textLabels = options.textLabels.filter;
+    const filterGridColumns = columns.filter(col => col.filter).length === 1 ? 1 : 2;
 
     return (
       <div className={classes.root}>
@@ -295,7 +296,7 @@ class TableFilter extends React.Component {
           </div>
           <div className={classes.filtersSelected} />
         </div>
-        <GridList cellHeight="auto" cols={2}>
+        <GridList cellHeight="auto" cols={filterGridColumns}>
           {columns.map((column, index) => {
             if (column.filter) {
               const filterType = column.filterType || options.filterType;
