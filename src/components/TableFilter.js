@@ -167,15 +167,16 @@ class TableFilter extends React.Component {
                     <Checkbox
                       className={classes.checkboxIcon}
                       onChange={this.handleCheckboxChange.bind(null, index, filterValue, column.name)}
-                      checked={filterList[index].indexOf(filterValue) >= 0 ? true : false}
+                      checked={filterList[index][0] != null}
                       classes={{
                         root: classes.checkbox,
                         checked: classes.checked,
                       }}
-                      value={filterValue != null ? filterValue.toString() : ''}
+                      value={filterList[index][0]}
+                      indeterminate={filterList[index][0] === false}
                     />
                   }
-                  label={filterValue}
+                  label={column.label}
                 />
               </Grid>
             ))}
@@ -203,8 +204,8 @@ class TableFilter extends React.Component {
                 {textLabels.all}
               </MenuItem>
               {filterData[index].map((filterValue, filterIndex) => (
-                <MenuItem value={filterValue} key={filterIndex + 1}>
-                  {filterValue != null ? filterValue.toString() : ''}
+                <MenuItem value={filterValue.name || filterValue} key={filterIndex + 1}>
+                  {filterValue != null ? (filterValue.label || filterValue).toString() : ''}
                 </MenuItem>
               ))}
             </Select>
@@ -250,15 +251,15 @@ class TableFilter extends React.Component {
               {filterData[index].map((filterValue, filterIndex) => (
                 <MenuItem value={filterValue} key={filterIndex + 1}>
                   <Checkbox
-                    checked={filterList[index].indexOf(filterValue) >= 0 ? true : false}
-                    value={filterValue.toString()}
+                    checked={filterList[index].indexOf(filterValue.name) >= 0 ? true : false}
+                    value={filterValue.name}
                     className={classes.checkboxIcon}
                     classes={{
                       root: classes.checkbox,
                       checked: classes.checked,
                     }}
                   />
-                  <ListItemText primary={filterValue} />
+                  <ListItemText primary={filterValue.label} />
                 </MenuItem>
               ))}
             </Select>

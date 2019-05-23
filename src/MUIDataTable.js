@@ -192,6 +192,9 @@ class MUIDataTable extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.options !== prevProps.options) {
+      this.initializeTable(props);
+    }
     if (this.props.data !== prevProps.data || this.props.columns !== prevProps.columns) {
       this.setTableData(this.props, TABLE_LOAD.INITIAL);
     }
@@ -804,7 +807,7 @@ class MUIDataTable extends React.Component {
 
         switch (type) {
           case 'checkbox':
-            filterPos >= 0 ? filterList[index].splice(filterPos, 1) : filterList[index].push(value);
+            filterList[index] = filterList[index][0] == null ? [true] : filterList[index][0] === true ? [false] : [];
             break;
           case 'multiselect':
             filterList[index] = value === '' ? [] : value;
