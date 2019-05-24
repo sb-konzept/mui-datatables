@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import intersperse from 'ramda/src/intersperse';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import FormControl from '@material-ui/core/FormControl';
@@ -14,6 +15,20 @@ import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core/styles';
 import { TextField, Grid, GridList, GridListTile } from '@material-ui/core';
+import { DateTimePicker } from 'material-ui-pickers';
+import compose from 'ramda/src/compose';
+import setHours from 'date-fns/fp/setHours';
+import setMinutes from 'date-fns/fp/setMinutes';
+
+const initialFromDate = compose(
+  setHours(0),
+  setMinutes(0),
+);
+
+const initialToDate = compose(
+  setHours(23),
+  setMinutes(59),
+);
 
 export const defaultFilterStyles = theme => ({
   root: {
@@ -143,44 +158,36 @@ class TableFilter extends React.Component {
     this.props.onFilterUpdate(index, event.target.value, column, 'textField');
   };
 
+  handleDateRangeChange = (index, value, start, column) => {
+    this.props.onFilterUpdate(index, { start, value }, column, 'dateRange');
+  };
+
   renderCheckbox(column, index) {
     const { classes, filterData, filterList } = this.props;
 
     return (
-      <GridListTile key={index} cols={2}>
+      <GridListTile key={index} cols={1}>
         <FormGroup>
-          <Grid item xs={12}>
-            <Typography variant="body2" className={classes.checkboxListTitle}>
-              {column.label}
-            </Typography>
-          </Grid>
-          <Grid container>
-            {filterData[index].map((filterValue, filterIndex) => (
-              <Grid item key={filterIndex}>
-                <FormControlLabel
-                  key={filterIndex}
-                  classes={{
-                    root: classes.checkboxFormControl,
-                    label: classes.checkboxFormControlLabel,
-                  }}
-                  control={
-                    <Checkbox
-                      className={classes.checkboxIcon}
-                      onChange={this.handleCheckboxChange.bind(null, index, filterValue, column.name)}
-                      checked={filterList[index][0] != null}
-                      classes={{
-                        root: classes.checkbox,
-                        checked: classes.checked,
-                      }}
-                      value={filterList[index][0]}
-                      indeterminate={filterList[index][0] === false}
-                    />
-                  }
-                  label={column.label}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <FormControlLabel
+            classes={{
+              root: classes.checkboxFormControl,
+              label: classes.checkboxFormControlLabel,
+            }}
+            control={
+              <Checkbox
+                className={classes.checkboxIcon}
+                onChange={this.handleCheckboxChange.bind(null, index, null, column.name)}
+                checked={filterList[index][0] != null}
+                classes={{
+                  root: classes.checkbox,
+                  checked: classes.checked,
+                }}
+                value={filterList[index][0]}
+                indeterminate={filterList[index][0] === false}
+              />
+            }
+            label={column.label}
+          />
         </FormGroup>
       </GridListTile>
     );
@@ -233,6 +240,47 @@ class TableFilter extends React.Component {
     );
   }
 
+  renderDateRange(column, index) {
+    const { classes, filterData, filterList, options } = this.props;
+    const textLabels = options.textLabels.dateRange;
+
+    return (
+      <GridListTile key={index} cols={1}>
+        <div className={classes.selectRoot}>
+          <InputLabel shrink>{column.label}</InputLabel>
+          <Grid container spacing={8}>
+            <Grid item xs={12} lg={6}>
+              <DateTimePicker
+                ampm={false}
+                clearable
+                initialFocusedDate={initialFromDate(new Date())}
+                value={(filterList[index][0] && filterList[index][0][0]) || null}
+                onChange={value => this.handleDateRangeChange(index, value, true, column)}
+                label={textLabels.from}
+                cancelLabel={textLabels.cancel}
+                clearLabel={textLabels.clear}
+                okLabel={textLabels.ok}
+              />
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <DateTimePicker
+                ampm={false}
+                clearable
+                initialFocusedDate={initialToDate(new Date())}
+                value={(filterList[index][0] && filterList[index][0][1]) || null}
+                onChange={value => this.handleDateRangeChange(index, value, false, column)}
+                label={textLabels.to}
+                cancelLabel={textLabels.cancel}
+                clearLabel={textLabels.clear}
+                okLabel={textLabels.ok}
+              />
+            </Grid>
+          </Grid>
+        </div>
+      </GridListTile>
+    );
+  }
+
   renderMultiselect(column, index) {
     const { classes, filterData, filterList, options } = this.props;
 
@@ -244,22 +292,31 @@ class TableFilter extends React.Component {
             <Select
               multiple
               value={filterList[index] || []}
-              renderValue={selected => selected.join(', ')}
+              renderValue={selected =>
+                intersperse(
+                  ', ',
+                  selected.map(s => (typeof column.customBodyRender === 'function' ? column.customBodyRender(s) : s)),
+                )
+              }
               name={column.name}
               onChange={event => this.handleMultiselectChange(index, event.target.value, column.name)}
               input={<Input name={column.name} id={column.name} />}>
               {filterData[index].map((filterValue, filterIndex) => (
                 <MenuItem value={filterValue} key={filterIndex + 1}>
                   <Checkbox
-                    checked={filterList[index].indexOf(filterValue.name) >= 0 ? true : false}
-                    value={filterValue.name}
+                    checked={filterList[index].indexOf(filterValue) >= 0 ? true : false}
+                    value={filterValue}
                     className={classes.checkboxIcon}
                     classes={{
                       root: classes.checkbox,
                       checked: classes.checked,
                     }}
                   />
-                  <ListItemText primary={filterValue.label} />
+                  <ListItemText
+                    primary={
+                      typeof column.customBodyRender === 'function' ? column.customBodyRender(filterValue) : filterValue
+                    }
+                  />
                 </MenuItem>
               ))}
             </Select>
@@ -306,6 +363,8 @@ class TableFilter extends React.Component {
                 ? this.renderMultiselect(column, index)
                 : filterType === 'textField'
                 ? this.renderTextField(column, index)
+                : filterType === 'dateRange'
+                ? this.renderDateRange(column, index)
                 : this.renderSelect(column, index);
             }
           })}

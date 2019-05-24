@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import isEmpty from 'ramda/src/isEmpty';
 import Paper from '@material-ui/core/Paper';
 import MuiTable from '@material-ui/core/Table';
 import TableToolbar from './components/TableToolbar';
@@ -192,9 +193,9 @@ class MUIDataTable extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.options !== prevProps.options) {
-      this.initializeTable(this.props);
-    }
+    // if (this.props.options !== prevProps.options) {
+    //   this.initializeTable(this.props);
+    // }
     if (this.props.data !== prevProps.data || this.props.columns !== prevProps.columns) {
       this.setTableData(this.props, TABLE_LOAD.INITIAL);
     }
@@ -804,6 +805,7 @@ class MUIDataTable extends React.Component {
       prevState => {
         const filterList = cloneDeep(prevState.filterList);
         const filterPos = filterList[index].indexOf(value);
+        console.log('filterUpdate', index, value, column, type);
 
         switch (type) {
           case 'checkbox':
@@ -811,6 +813,19 @@ class MUIDataTable extends React.Component {
             break;
           case 'multiselect':
             filterList[index] = value === '' ? [] : value;
+            break;
+          case 'dateRange':
+            filterList[index][0] = filterList[index][0] || [];
+            const ridx = value.start ? 0 : 1;
+            if (value.value === null) {
+              delete filterList[index][0][ridx];
+            } else {
+              filterList[index][0][ridx] = value.value;
+            }
+
+            if (isEmpty(filterList[index][0])) {
+              delete filterList[index][0];
+            }
             break;
           default:
             filterList[index] = filterPos >= 0 || value === '' ? [] : [value];
@@ -1089,7 +1104,9 @@ class MUIDataTable extends React.Component {
         <TableFilterList
           options={this.options}
           filterListRenderers={columns.map(c => {
-            return c.customFilterListRender ? c.customFilterListRender : f => f;
+            return c.customFilterListRender
+              ? c.customFilterListRender
+              : f => (Array.isArray(f) ? f.map(ff => ff.toString()).join(' - ') : f.toString());
           })}
           filterList={filterList}
           filterUpdate={this.filterUpdate}

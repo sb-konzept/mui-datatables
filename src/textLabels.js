@@ -33,6 +33,13 @@ const textLabels = {
     delete: 'Delete',
     deleteAria: 'Delete Selected Rows',
   },
+  dateRange: {
+    to: 'To',
+    from: 'From',
+    ok: 'OK',
+    cancel: 'CANCEL',
+    clear: 'CLEAR',
+  },
 };
 
 export default textLabels;
