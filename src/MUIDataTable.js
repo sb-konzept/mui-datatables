@@ -11,7 +11,7 @@ import TableResize from './components/TableResize';
 import TableHead from './components/TableHead';
 import TableFooter from './components/TableFooter';
 import classnames from 'classnames';
-import cloneDeep from 'lodash.clonedeep';
+import _cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import isEqual from 'lodash.isequal';
 import find from 'lodash.find';
@@ -19,6 +19,8 @@ import isUndefined from 'lodash.isundefined';
 import textLabels from './textLabels';
 import { withStyles } from '@material-ui/core/styles';
 import { buildMap, getCollatorComparator, sortCompare } from './utils';
+
+const cloneDeep = data => data;
 
 const defaultTableStyles = {
   root: {},
@@ -193,9 +195,10 @@ class MUIDataTable extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    // if (this.props.options !== prevProps.options) {
-    //   this.initializeTable(this.props);
-    // }
+    // console.count('cdu mdt');
+    if (this.props.options !== prevProps.options) {
+      this.initializeTable(this.props);
+    }
     if (this.props.data !== prevProps.data || this.props.columns !== prevProps.columns) {
       this.setTableData(this.props, TABLE_LOAD.INITIAL);
     }
