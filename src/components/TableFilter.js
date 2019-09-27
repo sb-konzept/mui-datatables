@@ -162,6 +162,10 @@ class TableFilter extends React.Component {
     this.props.onFilterUpdate(index, { start, value }, column, 'dateRange');
   };
 
+  handleCustomChange = (value, index, column) => {
+    this.props.onFilterUpdate(index, value, column.name, column.filterType);
+  };
+
   renderCheckbox(column, index) {
     const { classes, filterData, filterList } = this.props;
 
@@ -326,6 +330,24 @@ class TableFilter extends React.Component {
     );
   }
 
+  renderCustomField(column, index) {
+    const { classes, filterList, options } = this.props;
+    const display = column.customFilterRender;
+
+    if (!display) {
+      console.error('Property "customFilterRender" is required when using custom filter type.');
+      return;
+    }
+
+    return (
+      <GridListTile key={index} cols={1} classes={{ tile: classes.gridListTile }}>
+        <FormControl key={index} fullWidth>
+          {display(filterList, this.handleCustomChange, index, column)}
+        </FormControl>
+      </GridListTile>
+    );
+  }
+
   render() {
     const { classes, columns, options, onFilterReset } = this.props;
     const textLabels = options.textLabels.filter;
@@ -365,6 +387,8 @@ class TableFilter extends React.Component {
                 ? this.renderTextField(column, index)
                 : filterType === 'dateRange'
                 ? this.renderDateRange(column, index)
+                : filterType === 'custom'
+                ? this.renderCustomField(column, index)
                 : this.renderSelect(column, index);
             }
           })}
