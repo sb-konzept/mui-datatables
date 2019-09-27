@@ -1,6 +1,6 @@
 {
   "name": "@sb-konzept/mui-datatables",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Datatables for React using Material-UI",
   "main": "dist/index.js",
   "files": [
