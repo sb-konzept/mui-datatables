@@ -15,7 +15,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core/styles';
 import { TextField, Grid, GridList, GridListTile } from '@material-ui/core';
-import { DateTimePicker } from 'material-ui-pickers';
+import { DateTimePicker } from '@material-ui/pickers';
 import compose from 'ramda/src/compose';
 import setHours from 'date-fns/fp/setHours';
 import setMinutes from 'date-fns/fp/setMinutes';
